@@ -1,0 +1,15 @@
+{
+    "LOG": {
+        "level": "debug",
+        "handler": "stream"
+    },
+    "DINGTALK": "your dingding token",
+    "TUSHARE": "67ea5c20a6cf08ccc07ee0ab1d0b42376439cafe2bec5787cde95b31",
+    "SENDMAIL": {
+        "from" : "your qq email address",
+        "password" : "your qq email authorization code",
+        "to" : "your qq email address",
+        "server" : "smtp.qq.com",
+        "port": 587
+    }
+}
