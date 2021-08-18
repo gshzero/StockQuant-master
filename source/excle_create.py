@@ -1,3 +1,4 @@
+import sys
 import time
 import xlwt
 
@@ -9,7 +10,7 @@ class ExcelWrite:
         filename：保存的excel文件名称
         data：写入的数据字典
         """
-        if len(data) != 0:
+        if data:
             self.filename = filename
             self.data = data
             self.stock_column = 1
@@ -21,6 +22,7 @@ class ExcelWrite:
                 n = n + 1
         else:
             print('输入数组为空')
+            sys.exit(0)
 
     def time_stamp(self):
         """返回当天日期"""

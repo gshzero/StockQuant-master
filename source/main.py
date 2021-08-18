@@ -5,6 +5,8 @@ from source.UsingMysql import UsingMysql
 from source.excle_create import ExcelWrite
 from source.HttpConnet import HttpConnet
 from source.html_date_get import HtmlDataGet
+from source.concept_date import Concept
+
 import time
 
 
@@ -29,7 +31,7 @@ class main:
             sql = "select id  from stock_klines where stock_number = %s " % (dict['code'])
             id = um.get_count(sql, None, 'id')
             print("-- 当前id: %s" % id)
-            if id is None:
+            if id == 0:
                 sql = "INSERT INTO stock_klines ( stock_number, name,klines ) VALUES ( %s, %s,%s);" % (
                 "\"" + dict['code'] + "\"", "\'" + dict['name'] + "\'", "\"" + str(dict['klines']) + "\"")
                 um.install_one(sql, None)
@@ -57,7 +59,7 @@ class main:
             else:
                 print("not can get data:" + i['f12'])
 
-        print('all data update success')
+        print('all stock update success')
 
     def updata_stock_message(self, cookies):
         """
@@ -106,6 +108,33 @@ class main:
             table.write_sheet()
             table.save_book()
 
+    def update_concept_kline(self):
+        """
+        业务层更新概念日交易数据
+        """
+        http_connect = Concept()
+        # 获取概念列表
+        plate_list = http_connect.get_concept_list()
+        plate_klines_list = http_connect.get_concept_klines(plate_list)
+        if plate_klines_list is not None:
+            with UsingMysql(log_time=True) as um:
+                for i in plate_klines_list:
+                    sql = "select id  from concept_klines where concept_number = '%s'" % (i['concept_number'])
+                    id = um.get_count(sql, None, 'id')
+                    print("-- 当前id: %s" % id)
+                    if id == 0:
+                        sql = "INSERT INTO concept_klines ( concept_number, concept_name,klines ) VALUES ( %s, %s,%s);" % (
+                        "\"" + i['concept_number'] + "\"", "\'" + i['概念名称'] + "\'", "\"" + i['klines'] + "\"")
+                        um.install_one(sql, None)
+                        print('install success')
+                    else:
+                        print(id)
+                        sql = "UPDATE concept_klines SET klines=%s WHERE id=%d" % ("\"" + i['klines'] + "\"", id)
+                        um.update_by_pk(sql)
+                        print('update success')
+        else:
+            print("concept_klines_list is null")
+        print('all concept update success')
 
 if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
@@ -119,4 +148,6 @@ if __name__ == '__main__':
     # main().get_atock_margin(4)
     # 获取十字星股票列表
     # main().get_atock_bottom(4)
+    # 更新板块k线记录
+    # main().update_concept_kline()
 

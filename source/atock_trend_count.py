@@ -124,36 +124,42 @@ class atockTrendCount:
             if len(klines) >= self.days:
                 statistical_period = klines[len(klines) - self.days:len(klines)]
                 statistical_period = Tool().spilt_str_list(statistical_period)
-                if float(statistical_period[len(statistical_period)-1][9]) < 0 or float(statistical_period[len(statistical_period)-2][9]) < 0:
+                difference1 = 0
+                difference2 = 0
+                if float(statistical_period[len(statistical_period)-1][8]) < 0:
                     a1 = (float(statistical_period[len(statistical_period)-1][1]) - float(statistical_period[len(statistical_period)-1][2]))
                     a1 = [a1, 1000000][a1 == 0]
+                    difference1 = (float(statistical_period[len(statistical_period)-1][3]) - float(statistical_period[len(statistical_period)-1][4]))/a1
+                elif float(statistical_period[len(statistical_period)-2][8]) < 0:
                     a2 = (float(statistical_period[len(statistical_period) - 2][1]) - float(
                         statistical_period[len(statistical_period) - 2][2]))
                     a2 = [a2, 1000000][a2 == 0]
-                    difference1 = (float(statistical_period[len(statistical_period)-1][3]) - float(statistical_period[len(statistical_period)-1][4]))/a1
                     difference2 = (float(statistical_period[len(statistical_period)-2][3]) - float(statistical_period[len(statistical_period)-2][4]))/a2
-                    if difference1 >= 10 or difference2 >= 10:
-                        turnover_rate1 = float(statistical_period[len(statistical_period)-1][10])
-                        turnover_rate2 = float(statistical_period[len(statistical_period)-2][10])
-                        turnover_rate = [turnover_rate1, turnover_rate2][turnover_rate1 >= turnover_rate2]
-                        rate = turnover_rate
-                        for change1 in statistical_period:
-                            if float(change1[10]) <= turnover_rate:
-                                turnover_rate = float(change1[10])
-                            else:
-                                continue
-                        if turnover_rate >= rate:
-                            atock_count_dict.update({'股票代码': atock_number})
-                            atock_count_dict.update({'股票名称': stock_name})
-                            atock_count_dict.update({'股票概念': concept})
-                            atock_price_margin.append(atock_count_dict)
-                        else:
-                            break
-                    else:
-                        continue
-
                 else:
                     continue
-                return atock_price_margin
+                    # 判断最后2天收盘价与开票价的差与幅度的比
+                if difference1 >= 1 or difference2 >= 1 and (difference1 != 0 and difference2 != 0):
+                    turnover_rate1 = float(statistical_period[len(statistical_period)-1][10])
+                    turnover_rate2 = float(statistical_period[len(statistical_period)-2][10])
+                    turnover_rate = [turnover_rate1, turnover_rate2][difference2 >= difference1]
+                    rate = turnover_rate
+                    for change1 in statistical_period:
+                        if float(change1[10]) <= turnover_rate:
+                            turnover_rate = float(change1[10])
+                        else:
+                            continue
+                    if turnover_rate >= rate:
+                        atock_count_dict.update({'股票代码': atock_number})
+                        atock_count_dict.update({'股票名称': stock_name})
+                        atock_count_dict.update({'股票概念': concept})
+                        if float(statistical_period[len(statistical_period)-1][8])<=float(statistical_period[len(statistical_period)-2][8]) < 0:
+                            atock_count_dict.update({'最近2天最小跌幅': float(statistical_period[len(statistical_period)-1][8])})
+                        else:
+                            atock_count_dict.update(
+                                {'最近2天最小跌幅': float(statistical_period[len(statistical_period) - 2][8])})
+                        atock_price_margin.append(atock_count_dict)
+                else:
+                    continue
+        return atock_price_margin
 
 

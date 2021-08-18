@@ -14,6 +14,8 @@
 import pymysql
 from timeit import default_timer
 from DBUtils.PooledDB import PooledDB
+import traceback
+
 
 
 class DMysqlConfig:
@@ -143,7 +145,7 @@ class UsingMysql(object):
     def get_count(self, sql, params=None, count_key='count(id)'):
         """
         统计数量
-        return:count
+        return:查询字段列表
         """
         self.cursor.execute(sql, params)
         data = self.cursor.fetchone()
@@ -191,6 +193,14 @@ class UsingMysql(object):
         self.cursor.execute(sql, params)
         if self._commit:
             self._conn.commit()
+
+    def update_many(self, temp, data):
+        try:
+            self.cursor.executemany(temp, data)
+            self.cursor.commit()
+        except:
+            self.cursor.rollback()
+            traceback.print_exc()
 
     @property
     def cursor(self):
