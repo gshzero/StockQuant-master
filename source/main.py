@@ -27,6 +27,7 @@ class main:
         """
         数据层更新数据库日交易数据
         """
+        stock_klines_tupple = []
         with UsingMysql(log_time=True) as um:
             sql = "select id  from stock_klines where stock_number = %s " % (dict['code'])
             id = um.get_count(sql, None, 'id')
@@ -37,9 +38,10 @@ class main:
                 um.install_one(sql, None)
                 print('install success')
             else:
-                sql = "UPDATE stock_klines SET klines=%s WHERE id=%d" % ("\"" + str(dict['klines']) + "\"", id)
-                um.update_by_pk(sql)
-                print('update success')
+                stock_klines_tupple.append((str(dict['klines']), id))
+            sql = "UPDATE stock_klines SET klines='%s' WHERE id='%s'"
+            um.update_many(sql, stock_klines_tupple)
+            print('update success')
 
     def update_stock_kline(self):
         """
@@ -140,14 +142,14 @@ if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
     # main().getAtockCount(5)
     #更新数据库股票日交易数据
-    main().update_stock_kline()
+    # main().update_stock_kline()
     #更新股票概念信息
     # Cookies = 'cid=9694472d4d82cd29fe1c071b36d4d3181627980027; ComputerID=9694472d4d82cd29fe1c071b36d4d3181627980027; WafStatus=0; other_uid=Ths_iwencai_Xuangu_bgee9foa6zwk1ksuqxbxbxdhwp5f26th; ta_random_userid=xgwoi1enwi; vvvv=1; PHPSESSID=9694472d4d82cd29fe1c071b36d4d318; v=A4cFB7L6qhelcC6bSVmvoZBJFjBSjFtutWDf4ll0o5Y9yKkmYVzrvsUwb3xq; '
     # main().updata_stock_message(Cookies)
     # 获取上涨股票列表
     # main().get_atock_margin(4)
     # 获取十字星股票列表
-    # main().get_atock_bottom(4)
+    main().get_atock_bottom(4)
     # 更新板块k线记录
     # main().update_concept_kline()
 
