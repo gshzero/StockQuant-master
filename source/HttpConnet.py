@@ -12,7 +12,7 @@ class HttpConnet(object):
         return：本日股票交易列表
         """
         stock_today_list = []
-        for i in range(1, 230):
+        for i in range(1, 232):
             payload = {
                 "cb": "jQuery112409772849711893803_1623574203242",
                 "pn": i,

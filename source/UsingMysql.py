@@ -197,10 +197,17 @@ class UsingMysql(object):
     def update_many(self, temp, data):
         try:
             self.cursor.executemany(temp, data)
-            self.cursor.commit()
+            self._conn.commit()
         except:
-            self.cursor.rollback()
+            self._conn.rollback()
             traceback.print_exc()
+
+    def delete(self, sql):
+        """插入数据库"""
+        self.cursor.execute(sql)
+        if self._commit:
+            self._conn.commit()
+
 
     @property
     def cursor(self):

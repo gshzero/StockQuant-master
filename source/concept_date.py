@@ -1,6 +1,7 @@
 import requests
 import ast
 import json
+from source.tool import Tool
 
 from source.UsingMysql import UsingMysql
 from source.excle import ExcelWrite
@@ -68,6 +69,66 @@ class Concept(object):
                 concept_klines.update({'概念名称': i['概念名称'], 'klines': str(concept_list_dict['data']['klines']), 'concept_number': i['概念代码']})
                 concept_klines_list.append(concept_klines)
         return concept_klines_list
+
+    def get_concept_doji(self, date, days):
+        """
+        获取最近大概率上涨的股票概念
+        date:股票字典列表
+        days:统计周期
+        """
+        concept_price_margin = []
+        for concept in date:
+            concept_count_dict = {}
+            concept_number = concept['concept_number']
+            concept_name = concept['concept_name']
+            klines = concept['klines'].replace('[', '').replace(']', '').split(', ')
+            if len(klines) >= days:
+                statistical_period = klines[len(klines) - days:len(klines)]
+                statistical_period = Tool().spilt_str_list(statistical_period)
+                difference1 = 0
+                difference2 = 0
+                if (float(statistical_period[len(statistical_period) - 2][8]) < 0) and (
+                        float(statistical_period[len(statistical_period) - 1][8]) > 0):
+                    a1 = (float(statistical_period[len(statistical_period) - 2][1]) - float(
+                        statistical_period[len(statistical_period) - 2][2]))
+                    a1 = [a1, 1000000][a1 == 0]
+                    difference1 = (float(statistical_period[len(statistical_period) - 2][3]) - float(
+                        statistical_period[len(statistical_period) - 2][4])) / a1
+                elif (float(statistical_period[len(statistical_period) - 3][8])) < 0 and (
+                        float(statistical_period[len(statistical_period) - 1][8]) > 0):
+                    a2 = (float(statistical_period[len(statistical_period) - 3][1]) - float(
+                        statistical_period[len(statistical_period) - 3][2]))
+                    a2 = [a2, 1000000][a2 == 0]
+                    difference2 = (float(statistical_period[len(statistical_period) - 3][3]) - float(
+                        statistical_period[len(statistical_period) - 3][4])) / a2
+                else:
+                    continue
+                    # 判断最后2天收盘价与开票价的差与幅度的比
+                if difference1 >= 1 or difference2 >= 1 and (difference1 != 0 and difference2 != 0):
+                    turnover_rate1 = float(statistical_period[len(statistical_period) - 2][10])
+                    turnover_rate2 = float(statistical_period[len(statistical_period) - 3][10])
+                    turnover_rate = [turnover_rate1, turnover_rate2][difference2 >= difference1]
+                    rate = turnover_rate
+                    for change1 in statistical_period:
+                        if float(change1[10]) <= turnover_rate:
+                            turnover_rate = float(change1[10])
+                        else:
+                            continue
+                    if turnover_rate >= rate:
+                        concept_count_dict.update({'概念代码': concept_number})
+                        concept_count_dict.update({'概念名称': concept_name})
+                        reciprocal_two = float(statistical_period[len(statistical_period) - 2][8])
+                        reciprocal_three = float(statistical_period[len(statistical_period) - 3][8])
+                        if reciprocal_two <= reciprocal_three:
+                            concept_count_dict.update(
+                                {'最近2天最小跌幅': float(statistical_period[len(statistical_period) - 2][8])})
+                        else:
+                            concept_count_dict.update(
+                                {'最近2天最小跌幅': float(statistical_period[len(statistical_period) - 3][8])})
+                        concept_price_margin.append(concept_count_dict)
+                else:
+                    continue
+        return concept_price_margin
 
 
 # book = ExcelWrite('Today_market')

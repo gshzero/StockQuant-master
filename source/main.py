@@ -7,6 +7,7 @@ from source.HttpConnet import HttpConnet
 from source.html_date_get import HtmlDataGet
 from source.concept_date import Concept
 
+
 import time
 
 
@@ -38,8 +39,8 @@ class main:
                 um.install_one(sql, None)
                 print('install success')
             else:
-                stock_klines_tupple.append((str(dict['klines']), id))
-            sql = "UPDATE stock_klines SET klines='%s' WHERE id='%s'"
+                stock_klines_tupple.append((str(dict['klines']), str(id)))
+            sql = "UPDATE stock_klines SET klines=(%s) WHERE id=(%s)"
             um.update_many(sql, stock_klines_tupple)
             print('update success')
 
@@ -120,6 +121,7 @@ class main:
         plate_klines_list = http_connect.get_concept_klines(plate_list)
         if plate_klines_list is not None:
             with UsingMysql(log_time=True) as um:
+                um.delete('delete from concept_klines')
                 for i in plate_klines_list:
                     sql = "select id  from concept_klines where concept_number = '%s'" % (i['concept_number'])
                     id = um.get_count(sql, None, 'id')
@@ -138,6 +140,17 @@ class main:
             print("concept_klines_list is null")
         print('all concept update success')
 
+    def get_concept_bottom(self, days):
+        print('-------get concept bottom start-------')
+        with UsingMysql(log_time=True) as um2:
+            sql = "select concept_number,concept_name,klines from concept_klines"
+            data = um2.fetch_all(sql, None)
+            concept_count = Concept()
+            concept_count_list = concept_count.get_concept_doji(data, days)
+            table = ExcelWrite('_concept_Doji', concept_count_list)
+            table.write_sheet()
+            table.save_book()
+
 if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
     # main().getAtockCount(5)
@@ -149,7 +162,7 @@ if __name__ == '__main__':
     # 获取上涨股票列表
     # main().get_atock_margin(4)
     # 获取十字星股票列表
-    main().get_atock_bottom(4)
+    # main().get_atock_bottom(10)
     # 更新板块k线记录
     # main().update_concept_kline()
-
+      main().get_concept_bottom(5)
