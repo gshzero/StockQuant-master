@@ -132,10 +132,10 @@ class Concept(object):
 
     def get_rise_concep(self, date, days):
         """
-               统计最近连续上涨天数获取最近大概率上涨的股票概念
-               date:股票字典列表
-               days:统计周期
-               """
+        统计最近连续上涨天数的占比
+        date:股票字典列表
+        days:统计周期
+        """
         concept_price_margin = []
         for concept in date:
             concept_count_dict = {}
@@ -153,7 +153,7 @@ class Concept(object):
                     else:
                         break
                     if n == days:
-                        price_disparity = (float(statistical_period[len(statistical_period) - 1][2]) - float(statistical_period[len(statistical_period) - days-2][2]))/float(statistical_period[len(statistical_period) - days-2][2])*100
+                        price_disparity = (float(statistical_period[len(statistical_period) - 1][2]) - float(statistical_period[len(statistical_period) - days][2]))/float(statistical_period[len(statistical_period) - days][2])*100
                         concept_count_dict.update({'概念代码': concept_number})
                         concept_count_dict.update({'概念名称': concept_name})
                         concept_count_dict.update({'上涨幅度': price_disparity})

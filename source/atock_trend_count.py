@@ -164,4 +164,31 @@ class atockTrendCount:
                     continue
         return atock_price_margin
 
-
+    def get_rise_stock(self):
+        """
+        获取最近下跌过程中十字星的股票
+        """
+        atock_price_margin = []
+        for atock in self.atock_data:
+            atock_count_dict = {}
+            atock_number = atock['stock_number']
+            stock_name = atock['name']
+            concept = atock['concept']
+            klines = atock['klines'].replace('[', '').replace(']', '').split(', ')
+            if len(klines) >= self.days:
+                statistical_period = klines[len(klines) - self.days:len(klines)]
+                statistical_period = Tool().spilt_str_list(statistical_period)
+                n = 0
+                for stock_kline in statistical_period:
+                    if float(stock_kline[8]) > 0:
+                        n = n + 1
+                    else:
+                        continue
+                b = len(statistical_period) - self.days-1
+                a1 = float(statistical_period[len(statistical_period) - self.days-1][2])
+                a2 = float(statistical_period[len(statistical_period)-1][2])
+                Increase = (float(statistical_period[len(statistical_period) -1][2]) - float(statistical_period[len(statistical_period) - self.days][2]))/float(statistical_period[len(statistical_period) - self.days][2]) * 100
+                ratio = int(n/self.days*100)
+                atock_count_dict.update({"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase), "concept": concept})
+                atock_price_margin.append(atock_count_dict)
+        return atock_price_margin

@@ -142,9 +142,9 @@ class HtmlDataGet(object):
     #     return ndustry_str
 
     def get_stock_concept(self, stock_list):
-        """调用东方财富接口查询概念历史交易K线数据
-               return：板块历史交易K线数据列表
-               """
+        """调用东方财富接口查询股票概念
+            return：板块历史交易K线数据列表
+        """
         stock_mark_list = ['600', '601', '602', '603', '605', '688', '689']
         stock_concept_list = []
         schedule_number = 0
@@ -174,7 +174,7 @@ class HtmlDataGet(object):
                 pass
             stock_concept_str = ''
             for concept in stock_list_dict["ssbk"]:
-                stock_concept_str = concept['BOARD_NAME'] + '，'
+                stock_concept_str = stock_concept_str + concept['BOARD_NAME'] + '，'
             stock_concept.update({'concept': stock_concept_str, 'stock_number': i['stock_number'], 'id': i['id']})
             stock_concept_list.append(stock_concept)
         return stock_concept_list
