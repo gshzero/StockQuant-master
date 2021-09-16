@@ -168,6 +168,17 @@ class main:
             table.write_sheet()
             table.save_book()
 
+    def get_atock_breakthrough(self, days):
+        print('-------get atock atock_breakthrough list start-------')
+        with UsingMysql(log_time=True) as um3:
+            sql = "select a.stock_number,a.name,a.klines,b.concept from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '688%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
+            data = um3.fetch_all(sql, None)
+            atock_count = atockTrendCount(data, days)
+            atock_count_list = atock_count.get_breakthrough_stock()
+            table = ExcelWrite('_breakthrough', atock_count_list)
+            table.write_sheet()
+            table.save_book()
+
 
 if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
@@ -186,5 +197,6 @@ if __name__ == '__main__':
     # 获取上涨趋势概念列表
     #   main().get_concept_bottom(5)
     # 统计最近几天上涨的概念
-    main().get_rise_concept_list(6)
+    # main().get_rise_concept_list(6)
     # main().get_atock_rise(5)
+    main().get_atock_breakthrough(3)

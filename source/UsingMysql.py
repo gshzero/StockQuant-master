@@ -197,7 +197,7 @@ class UsingMysql(object):
     def update_many(self, temp, data):
         try:
             self.cursor.executemany(temp, data)
-            self.cursor.commit()
+            self._conn.commit()
         except:
             self.cursor.rollback()
             traceback.print_exc()
