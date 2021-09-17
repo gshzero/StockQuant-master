@@ -184,7 +184,7 @@ if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
     # main().getAtockCount(5)
     # 更新数据库股票日交易数据
-    # main().update_stock_kline()
+    main().update_stock_kline()
     # 更新股票概念信息
     # Cookies = 'cid=9694472d4d82cd29fe1c071b36d4d3181627980027; ComputerID=9694472d4d82cd29fe1c071b36d4d3181627980027; WafStatus=0; other_uid=Ths_iwencai_Xuangu_bgee9foa6zwk1ksuqxbxbxdhwp5f26th; ta_random_userid=xgwoi1enwi; vvvv=1; PHPSESSID=9694472d4d82cd29fe1c071b36d4d318; v=A4cFB7L6qhelcC6bSVmvoZBJFjBSjFtutWDf4ll0o5Y9yKkmYVzrvsUwb3xq; '
     # main().updata_stock_message()
@@ -199,4 +199,4 @@ if __name__ == '__main__':
     # 统计最近几天上涨的概念
     # main().get_rise_concept_list(6)
     # main().get_atock_rise(5)
-    main().get_atock_breakthrough(3)
+    # main().get_atock_breakthrough(3)
