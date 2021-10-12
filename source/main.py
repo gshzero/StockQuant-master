@@ -6,6 +6,10 @@ from source.excle_create import ExcelWrite
 from source.HttpConnet import HttpConnet
 from source.html_date_get import HtmlDataGet
 from source.concept_date import Concept
+from DB_thread import DB_threading
+from globalvar import Global_Data
+from http_threading import Http_Threading
+
 
 import time
 
@@ -22,45 +26,86 @@ class main:
             table.write_sheet()
             table.save_book()
 
-    def update_kline(self, dict):
+    def update_kline(self, stock_date_list):
         """
         数据层更新数据库日交易数据
         """
-        stock_klines_tupple = []
-        with UsingMysql(log_time=True) as um:
-            sql = "select id  from stock_klines where stock_number = %s " % (dict['code'])
-            id = um.get_count(sql, None, 'id')
-            print("-- 当前id: %s" % id)
-            if id == 0:
-                sql = "INSERT INTO stock_klines ( stock_number, name,klines ) VALUES ( %s, %s,%s);" % (
-                    "\"" + dict['code'] + "\"", "\'" + dict['name'] + "\'", "\"" + str(dict['klines']) + "\"")
-                um.install_one(sql, None)
-                print('install success')
-            else:
-                stock_klines_tupple.append((str(dict['klines']), str(dict['name']), str(id)))
-            sql = "UPDATE stock_klines SET klines=(%s),name=(%s) WHERE id=(%s)"
-            um.update_many(sql, stock_klines_tupple)
-            print('update success')
+        start_time = time.time()
+        sql_list = []
+        for dict in stock_date_list:
+            with UsingMysql(log_time=True) as um:
+                sql = "select id  from stock_klines where stock_number = %s " % (dict['code'])
+                id = um.get_count(sql, None, 'id')
+                print("-- 当前id: %s" % id)
+                if id == 0:
+                    sql = "INSERT INTO stock_klines ( stock_number, name,klines ) VALUES ( %s, %s,%s);" % (
+                        "\"" + dict['code'] + "\"", "\'" + dict['name'] + "\'", "\"" + str(dict['klines']) + "\"")
+                    sql_list.append(sql)
+                    print('install success')
+                else:
+                    sql = "UPDATE stock_klines SET klines=(%s),name=('%s') WHERE id=('%s')" % ("\"" + str(dict['klines']) + "\"", str(dict['name']), str(id))
+                    sql_list.append(sql)
+                    print('update success')
+        if len(sql_list) > 0:
+            thread_list = []
+            N = 0
+            for i in sql_list:
+                N = N + 1
+                thread_list.append(DB_threading(N, i))
+                if len(thread_list) >= 50:
+                    print("线程数量为", len(thread_list))
+                    for thread in thread_list:
+                        thread.start()
+
+                    for thread in thread_list:
+                        thread.join()  # 10个线程都等待执行完,也就是说,10个线程有一个线程没运行完就不能往下执行代码; 这里会阻塞后面的thread_list=[]和print。但是多个线程间的join和join不会阻塞，也就是说执行完一个join还可以马上执行下一个join，但是执行完最后一个join不能马上执行 thread_list=[]
+
+                    thread_list = []  # 当所有线程运行完清空线程池
+                elif len(sql_list) - N < 100:
+                    print("线程数量为", len(thread_list))
+                    for thread in thread_list:
+                        thread.start()
+
+                    for thread in thread_list:
+                        thread.join()  # 10个线程都等待执行完,也就是说,10个线程有一个线程没运行完就不能往下执行代码; 这里会阻塞后面的thread_list=[]和print。但是多个线程间的join和join不会阻塞，也就是说执行完一个join还可以马上执行下一个join，但是执行完最后一个join不能马上执行 thread_list=[]
+
+                    thread_list = []  # 当所有线程运行完清空线程池
+        print('all stock update success')
+        print("总共用时:" + str(time.time() - start_time))
 
     def update_stock_kline(self):
         """
         业务层更新股票日交易数据
         """
+        thread_list = []
         http_connect = HttpConnet()
+        global_stock_data = Global_Data()
         # 获取股票列表
         stock_dict = http_connect.get_stock_list()
         stock_dict_longth = len(stock_dict)
-        n = 1
+        n = 0
         for i in stock_dict:
-            stock_date = http_connect.get_stock_klines(i['f12'])
-            print('progress rate:%d' % (n / stock_dict_longth * 100))
+            thread_list.append(Http_Threading(global_stock_data, i))
             n = n + 1
-            if stock_date is not None:
-                self.update_kline(stock_date)
-            else:
-                print("not can get data:" + i['f12'])
-
-        print('all stock update success')
+            if len(thread_list) >= 40:  # 当列表中的线程有10个,就开始执行10个线程
+                print("线程数量为", len(thread_list))
+                for thread in thread_list:
+                    thread.start()
+                for thread in thread_list:
+                    thread.join()  # 10个线程都等待执行完,也就是说,10个线程有一个线程没运行完就不能往下执行代码; 这里会阻塞后面的thread_list=[]和print。但是多个线程间的join和join不会阻塞，也就是说执行完一个join还可以马上执行下一个join，但是执行完最后一个join不能马上执行 thread_list=[]
+                thread_list = []  # 当所有线程运行完清空线程池
+            if (len(thread_list) > 0) and (len(stock_dict) - n < 20):
+                print("线程数量为", len(thread_list))
+                for thread in thread_list:
+                    thread.start()
+                for thread in thread_list:
+                    thread.join()  # 10个线程都等待执行完,也就是说,10个线程有一个线程没运行完就不能往下执行代码; 这里会阻塞后面的thread_list=[]和print。但是多个线程间的join和join不会阻塞，也就是说执行完一个join还可以马上执行下一个join，但是执行完最后一个join不能马上执行 thread_list=[]
+                thread_list = []  # 当所有线程运行完清空线程池
+            print('progress rate:%d' % (n / stock_dict_longth * 100))
+        if len(global_stock_data.get_stock_klines_list()) > 0:
+            self.update_kline(global_stock_data.get_stock_klines_list())
+        else:
+            print("not can get data")
 
     def updata_stock_message(self):
         """
@@ -78,7 +123,7 @@ class main:
             else:
                 stock_concept_list = HtmlDataGet().get_stock_concept(id_list)
                 for concept in stock_concept_list:
-                    sql = "update stock_list set concept = '%s' where id= '%s';" % (concept['concept'], concept["id"])
+                    sql = "update stock_list set concept = '%s',Market_value_rank = '%s',profit_rank = '%s', nterprise_sum = '%s'  where id= '%s';" % (concept['concept'], concept['Market_value_rank'], concept['profit_rank'], concept['nterprise_sum'], concept["id"])
                     um.update_by_pk(sql, None)
                     serial_number = Serial_number + 1
                     print(serial_number / len(id_list) * 100)
@@ -87,7 +132,7 @@ class main:
     def get_atock_margin(self, days):
         print('-------get atock margin start-------')
         with UsingMysql(log_time=True) as um2:
-            sql = "select a.stock_number,a.name,a.klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%'"
+            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%'"
             data = um2.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_price_margin()
@@ -189,7 +234,7 @@ if __name__ == '__main__':
     # Cookies = 'cid=9694472d4d82cd29fe1c071b36d4d3181627980027; ComputerID=9694472d4d82cd29fe1c071b36d4d3181627980027; WafStatus=0; other_uid=Ths_iwencai_Xuangu_bgee9foa6zwk1ksuqxbxbxdhwp5f26th; ta_random_userid=xgwoi1enwi; vvvv=1; PHPSESSID=9694472d4d82cd29fe1c071b36d4d318; v=A4cFB7L6qhelcC6bSVmvoZBJFjBSjFtutWDf4ll0o5Y9yKkmYVzrvsUwb3xq; '
     # main().updata_stock_message()
     # 获取上涨股票列表
-    # main().get_atock_margin(4)
+    # main().get_atock_margin(5)
     # 获取十字星股票列表
     # main().get_atock_bottom(10)
     # 更新板块k线记录
@@ -197,6 +242,6 @@ if __name__ == '__main__':
     # 获取上涨趋势概念列表
     #   main().get_concept_bottom(5)
     # 统计最近几天上涨的概念
-    # main().get_rise_concept_list(6)
+    # main().get_rise_concept_list(2)
     # main().get_atock_rise(5)
     # main().get_atock_breakthrough(3)

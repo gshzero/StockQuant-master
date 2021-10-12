@@ -67,6 +67,9 @@ class atockTrendCount:
             atock_number = atock['stock_number']
             stock_name = atock['name']
             ndustry = atock['concept']
+            Market_value_rank = atock["Market_value_rank"]
+            profit_rank = atock["profit_rank"]
+            nterprise_sum = atock["nterprise_sum"]
             klines = atock['klines'].replace('[', '').replace(']', '').split(', ')
             if len(klines) >= self.days:
                 statistical_period = klines[len(klines) - self.days:len(klines)]
@@ -105,6 +108,9 @@ class atockTrendCount:
                     atock_count_dict.update({'上涨天数占比': rise_atio})
                     atock_count_dict.update({'最低价与现价比率': increase})
                     atock_count_dict.update({'股票概念': ndustry})
+                    atock_count_dict.update({'市值排名': Market_value_rank})
+                    atock_count_dict.update({'利润排名': profit_rank})
+                    atock_count_dict.update({'企业总数': nterprise_sum})
                     atock_price_margin.append(atock_count_dict)
                 else:
                     continue
@@ -174,6 +180,9 @@ class atockTrendCount:
             atock_number = atock['stock_number']
             stock_name = atock['name']
             concept = atock['concept']
+            Market_value_rank = atock["Market_value_rank"]
+            profit_rank = atock["profit_rank"]
+            nterprise_sum = atock["nterprise_sum"]
             klines = atock['klines'].replace('[', '').replace(']', '').split(', ')
             if len(klines) >= self.days:
                 statistical_period = klines[len(klines) - self.days:len(klines)]
@@ -189,7 +198,7 @@ class atockTrendCount:
                 a2 = float(statistical_period[len(statistical_period)-1][2])
                 Increase = (float(statistical_period[len(statistical_period) -1][2]) - float(statistical_period[len(statistical_period) - self.days][2]))/float(statistical_period[len(statistical_period) - self.days][2]) * 100
                 ratio = int(n/self.days*100)
-                atock_count_dict.update({"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase), "concept": concept})
+                atock_count_dict.update({"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase), "concept": concept,"市值排名":Market_value_rank,"利润排名":profit_rank,"行业内企业总数":nterprise_sum})
                 atock_price_margin.append(atock_count_dict)
         return atock_price_margin
 

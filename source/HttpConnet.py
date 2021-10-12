@@ -37,11 +37,45 @@ class HttpConnet(object):
                 stock_today_list = stock_today_list + stock_list_dict['data']['diff']
         return stock_today_list
 
-    def get_stock_klines(self, stock_number):
+    def get_stock_rank(self, stock_number):
         """调用东方财富接口查询历史交易数据
                return：本日股票交易列表
                """
         if stock_number.find('300', 0, 3) > -1 or stock_number.find('301', 0, 3) > -1 or stock_number.find('00', 0, 2) > -1:
+            secid = float('0.' + str(stock_number))
+        else:
+            secid = float('1.' + str(stock_number))
+        payload = {
+            "spt": 1,
+            "np": 3,
+            "fltt": 2,
+            "invt": 2,
+            "fields": "f9,f12,f13,f14,f20,f23,f37,f45,f49,f134,f135,f129,f1000,f2000,f3000",
+            "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+            "secid": secid,
+            "cb": "jQuery112409803034742232057_1632792905231",
+            "_": 1632792905232
+        }
+        r = requests.get(url="http://push2.eastmoney.com/api/qt/slist/get", params=payload)
+        stock_list_str = str(r.text).partition('(')[2].partition(')')[0]
+        stock_list_dict = json.loads(stock_list_str)
+        if stock_list_dict['data'] is None:
+            print('此次获取的列表为空：' + str(secid))
+        else:
+            market_value = stock_list_dict['data']["diff"][0]["f20"]
+            market_rank = stock_list_dict['data']["diff"][0]["f1020"]
+            profit_rank = stock_list_dict['data']["diff"][0]["f1045"]
+            enterprise_total = stock_list_dict['data']["diff"][1]["f134"]
+            market_dict = {"market_value": market_value, "market_rank": market_rank, "profit_rank": profit_rank, "enterprise_total": enterprise_total}
+
+            return market_dict
+
+    def get_stock_klines(self, stock_number):
+        """调用东方财富接口查询历史交易数据
+               return：本日股票交易列表
+               """
+        if stock_number.find('300', 0, 3) > -1 or stock_number.find('301', 0, 3) > -1 or stock_number.find('00', 0,
+                                                                                                           2) > -1:
             secid = float('0.' + str(stock_number))
         else:
             secid = float('1.' + str(stock_number))
@@ -67,6 +101,7 @@ class HttpConnet(object):
         else:
             print('成功获取' + stock_list_dict['data']["name"] + '数据')
             return stock_list_dict['data']
+
 
 
 # book = ExcelWrite('Today_market')

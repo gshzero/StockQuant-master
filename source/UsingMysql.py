@@ -11,10 +11,13 @@
     您可以任意转载, 恳请保留我作为原作者, 谢谢.
 
 """
+import time
+
 import pymysql
 from timeit import default_timer
 from DBUtils.PooledDB import PooledDB
 import traceback
+from DB_thread import DB_threading
 
 
 
@@ -82,6 +85,10 @@ class DMysqlPoolConn:
                                              user=config.user,
                                              password=config.password,
                                              )
+
+
+    def get_pool(self):
+        return self.__class__.__pool
 
     def get_conn(self):
         return self.__pool.connection()
@@ -201,6 +208,36 @@ class UsingMysql(object):
         except:
             self.cursor.rollback()
             traceback.print_exc()
+
+    def delete(self, sql, params=None):
+        """
+        delete数据库
+        """
+        # print(sql)
+        self.cursor.execute(sql, params)
+        if self._commit:
+            self._conn.commit()
+
+    def DB_thread(self):
+        start_time = time.time()
+        thread_list = []  # 创建线程池
+        for i in range(1000):
+            thread_list.append(DB_threading(i,))
+            if len(thread_list) >= 1000:  # 当列表中的线程有10个,就开始执行10个线程
+                print("线程数量为", len(thread_list))
+                print(i)
+                for thread in thread_list:
+                    thread.start()
+
+                for thread in thread_list:
+                    thread.join()  # 10个线程都等待执行完,也就是说,10个线程有一个线程没运行完就不能往下执行代码; 这里会阻塞后面的thread_list=[]和print。但是多个线程间的join和join不会阻塞，也就是说执行完一个join还可以马上执行下一个join，但是执行完最后一个join不能马上执行 thread_list=[]
+
+                thread_list = []  # 当所有线程运行完清空线程池
+
+        print("总共用时:" + str(time.time() - start_time))
+
+    def get_cursor(self):
+        return self._cursor
 
     @property
     def cursor(self):
