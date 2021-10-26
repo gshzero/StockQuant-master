@@ -144,17 +144,20 @@ class Concept(object):
                 statistical_period = klines[len(klines) - days:len(klines)]
                 statistical_period = Tool().spilt_str_list(statistical_period)
                 n = 0
+                m = 0
                 for i in range(1, days+1):
-                    price = float(statistical_period[len(statistical_period) - i][8])
+
+                    price = float(statistical_period[len(statistical_period) - i][8]) #获取当天涨跌幅
                     if price > 0:
                         n = n + 1
-                    else:
-                        break
-                    if n <= days:
+                    m = m + 1
+                    if i >= days:
+                        a = n/int(days)
                         price_disparity = (float(statistical_period[len(statistical_period) - 1][2]) - float(statistical_period[len(statistical_period) - days][2]))/float(statistical_period[len(statistical_period) - days][2])*100
                         concept_count_dict.update({'概念代码': concept_number})
                         concept_count_dict.update({'概念名称': concept_name})
                         concept_count_dict.update({'上涨幅度': price_disparity})
+                        concept_count_dict.update({'上涨天数比率': a})
                         concept_price_margin.append(concept_count_dict)
         return concept_price_margin
 
