@@ -211,7 +211,7 @@ class HtmlDataGet(object):
         else:
             print('成功获取' + stock_list_dict['data']["diff"][0]["f14"] + '数据')
             stock_profit_rank = {'Market_value_rank': stock_list_dict['data']["diff"][0]["f1020"],
-                                 'profit_rank': stock_list_dict['data']["diff"][0]["f1045"], 'nterprise_sum': stock_list_dict['data']["diff"][1]["f134"]}
+                                 'profit_rank': stock_list_dict['data']["diff"][0]["f1045"], 'nterprise_sum': stock_list_dict['data']["diff"][1]["f134"],'Market_value': stock_list_dict['data']["diff"][0]["f20"]}
         return stock_profit_rank
 
 if __name__ == '__main__':

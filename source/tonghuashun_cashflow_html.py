@@ -60,6 +60,7 @@ class tonghuashun_cashflow_html(object):
             for tr in tbody:
                 fields = tr.select('td')
                 record = [field.text.strip() for field in fields[1:]]
+                record2 = fields[1].next['href']
                 record_list.append(record)
             print(record)
             return record_list

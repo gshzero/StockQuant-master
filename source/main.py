@@ -132,7 +132,7 @@ class main:
     def get_atock_margin(self, days):
         print('-------get atock margin start-------')
         with UsingMysql(log_time=True) as um2:
-            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%'"
+            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name like '%%'"
             data = um2.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_price_margin()
@@ -143,7 +143,7 @@ class main:
     def get_atock_bottom(self, days):
         print('-------get atock bottom start-------')
         with UsingMysql(log_time=True) as um2:
-            sql = "select a.stock_number,a.name,a.klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%'"
+            sql = "select a.stock_number,a.name,a.klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%'"
             data = um2.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_stock_doji()
@@ -234,7 +234,7 @@ class main:
     def get_atock_rise(self, days):
         print('-------get atock rise list start-------')
         with UsingMysql(log_time=True) as um3:
-            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '688%' or a.stock_number LIKE '689%'"
+            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '002%' or a.stock_number LIKE '689%')  and a.name NOT like '%ST%'"
             data = um3.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_rise_stock()
@@ -245,7 +245,7 @@ class main:
     def get_atock_breakthrough(self, days):
         print('-------get atock atock_breakthrough list start-------')
         with UsingMysql(log_time=True) as um3:
-            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '688%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
+            sql = "select a.stock_number,a.name,a.klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '002%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
             data = um3.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_breakthrough_stock()
@@ -262,14 +262,14 @@ if __name__ == '__main__':
     # 更新股票概念信息
     # Cookies = 'cid=9694472d4d82cd29fe1c071b36d4d3181627980027; ComputerID=9694472d4d82cd29fe1c071b36d4d3181627980027; WafStatus=0; other_uid=Ths_iwencai_Xuangu_bgee9foa6zwk1ksuqxbxbxdhwp5f26th; ta_random_userid=xgwoi1enwi; vvvv=1; PHPSESSID=9694472d4d82cd29fe1c071b36d4d318; v=A4cFB7L6qhelcC6bSVmvoZBJFjBSjFtutWDf4ll0o5Y9yKkmYVzrvsUwb3xq; '
     # main().updata_stock_message()
-    # 获取上涨股票列表
-    main().get_atock_margin(3)
+    # 获取最近一天缩量下跌股票列表
+    # main().get_atock_margin(3)
     # 获取十字星股票列表
     # main().get_atock_bottom(5)
     # 更新板块k线记录
     # main().update_concept_kline()
     # 获取上涨趋势概念列表
-    #   main().get_concept_bottom(3)
+    main().get_concept_bottom(3)
     # 统计最近几天上涨的概念
     # main().get_rise_concept_list(5)
     # main().get_atock_rise(3)
