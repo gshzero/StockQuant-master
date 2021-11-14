@@ -57,7 +57,7 @@ class atockTrendCount:
 
     def get_price_margin(self):
         """
-        获取交易天内股票价格变化
+        获取最新一天下跌且成交量缩小的股票交易天内股票价格变化
         rise_atio：指定天内上涨天数占比
         return：股票价格变化差额列表
         """
@@ -74,6 +74,7 @@ class atockTrendCount:
             if len(klines) >= self.days:
                 statistical_period = klines[len(klines) - self.days:len(klines)]
                 statistical_period = Tool().spilt_str_list(statistical_period)
+                lastest_day = statistical_period[(len(statistical_period) - 1)][0]
                 # 判断成交量最低的那天是不是涨跌幅最低的那天
                 quote_change = float(statistical_period[0][8])
                 turnover_rate = float(statistical_period[0][10])
@@ -89,10 +90,11 @@ class atockTrendCount:
                         turnover_rate = float(change2[10])
                         serial_number2 = a2
                     a2 = a2 + 1
-                if serial_number1 == serial_number2:
+                    # 计算开盘价与最低价的差减去最高价与收盘价的差
+                    price_strength = (float(change1[1]) - float(change1[4])) - (float(change1[3]) - float(change1[2]))
+                if (serial_number1 == serial_number2 == (len(statistical_period) - 1)) and (price_strength >= 0):
                     # 计算上涨天数占比
                     n = 0
-                    rise_atio = 0
                     for change3 in statistical_period:
                         if float(change3[8]) > 0:
                             n = n + 1
@@ -102,7 +104,7 @@ class atockTrendCount:
                     for change4 in statistical_period:
                         if float(change4[4]) <= lowest_price:
                             lowest_price = float(change4[4])
-                    increase = float(change4[4])*100/lowest_price
+                    increase = float(change4[4]) * 100 / lowest_price
                     atock_count_dict.update({'股票代码': atock_number})
                     atock_count_dict.update({'股票名称': stock_name})
                     atock_count_dict.update({'上涨天数占比': rise_atio})
@@ -111,6 +113,7 @@ class atockTrendCount:
                     atock_count_dict.update({'市值排名': Market_value_rank})
                     atock_count_dict.update({'利润排名': profit_rank})
                     atock_count_dict.update({'企业总数': nterprise_sum})
+                    atock_count_dict.update({'最后交易日': lastest_day})
                     atock_price_margin.append(atock_count_dict)
                 else:
                     continue
@@ -130,35 +133,55 @@ class atockTrendCount:
             if len(klines) >= self.days:
                 statistical_period = klines[len(klines) - self.days:len(klines)]
                 statistical_period = Tool().spilt_str_list(statistical_period)
-                difference1 = 0
-                difference2 = 0
-                # if (float(statistical_period[len(statistical_period)-2][8]) < 0) and (float(statistical_period[len(statistical_period)-1][8]) > 0):
-                if (float(statistical_period[len(statistical_period) - 1][8]) < 0):
-                    a1 = (float(statistical_period[len(statistical_period)-2][1]) - float(statistical_period[len(statistical_period)-2][2]))
-                    a1 = [a1, 1000000][a1 == 0]
-                    difference1 = (float(statistical_period[len(statistical_period)-2][3]) - float(statistical_period[len(statistical_period)-2][4]))/a1
-                # elif (float(statistical_period[len(statistical_period)-3][8])) < 0 and (float(statistical_period[len(statistical_period)-1][8]) > 0):
-                #     a2 = (float(statistical_period[len(statistical_period) - 3][1]) - float(
-                #         statistical_period[len(statistical_period) - 3][2]))
-                #     a2 = [a2, 1000000][a2 == 0]
-                #     difference2 = (float(statistical_period[len(statistical_period)-3][3]) - float(statistical_period[len(statistical_period)-3][4]))/a2
+                lastest_day = statistical_period[(len(statistical_period) - 1)][0]
+                lastest_day_shoudiepancha = float(statistical_period[len(statistical_period) - 1][1]) - float(
+                    statistical_period[len(statistical_period) - 1][2])
+                lastest_day_zuigaojiagecha = float(statistical_period[len(statistical_period) - 1][3]) - float(
+                    statistical_period[len(statistical_period) - 1][4])
+                dao_shu_di_er_tian_shoudiepancha = float(statistical_period[len(statistical_period) - 2][1]) - float(
+                    statistical_period[len(statistical_period) - 2][2])
+                if lastest_day_shoudiepancha == 0:
+                    lastest_day_shoudiepancha = 10000
+                    lastest_day_zuigaojiagecha = 10000
+                if lastest_day_shoudiepancha < 0:
+                    lastest_day_shangyinxian = float(statistical_period[len(statistical_period) - 1][3]) - float(statistical_period[len(statistical_period) - 1][2])
+                    lastest_day_shangyinxianbili = lastest_day_shangyinxian/lastest_day_zuigaojiagecha
+                elif lastest_day_shoudiepancha > 0:
+                    lastest_day_xiayinxian = float(statistical_period[len(statistical_period) - 1][2]) - float(statistical_period[len(statistical_period) - 1][4])
+                    lastest_day_xiayinxianbili = lastest_day_xiayinxian/lastest_day_zuigaojiagecha
                 else:
                     continue
-                    # 判断最后2天收盘价与开盘价的差与幅度的比
-                if difference1 >= 1:
-                    turnover_rate1 = float(statistical_period[len(statistical_period)-1][10])
-                    rate = turnover_rate1
-                    turnover_rate = turnover_rate1
-                    for change1 in statistical_period:
-                        if float(change1[10]) <= turnover_rate:
-                            turnover_rate = float(change1[10])
-                        else:
-                            continue
-                    if turnover_rate >= rate:
+                if (lastest_day_shoudiepancha < 0) and (lastest_day_shangyinxianbili <=0.3) and (dao_shu_di_er_tian_shoudiepancha > 0) and (abs(dao_shu_di_er_tian_shoudiepancha < abs(lastest_day_shoudiepancha))):
+                    a1 = 0
+                    a2 = 0
+                    for change2 in statistical_period:
+                        a2 = a2 + float(change2[10])
+                        if (float(change2[1]) - float(change2[2])) < 0:
+                            a1 = a1 + 1
+                    a2 = a2/len(statistical_period)
+                    if a2*0.6 < float(change2[10]) < a2*2:
                         atock_count_dict.update({'股票代码': atock_number})
                         atock_count_dict.update({'股票名称': stock_name})
                         atock_count_dict.update({'股票概念': concept})
-                        atock_count_dict.update({'最近1天最小跌幅': float(statistical_period[len(statistical_period)-1][8])})
+                        atock_count_dict.update({'最近红柱比例': a1/len(statistical_period)*100})
+                        atock_count_dict.update({'最近1天最小跌幅': float(statistical_period[len(statistical_period) - 1][8])})
+                        atock_count_dict.update({'最后交易日': lastest_day})
+                        atock_price_margin.append(atock_count_dict)
+                elif (lastest_day_shoudiepancha > 0) and (lastest_day_xiayinxianbili >= 0.6) and (dao_shu_di_er_tian_shoudiepancha > 0):
+                    a1 = 0
+                    a2 = 0
+                    for change2 in statistical_period:
+                        a2 = a2 + float(change2[10])
+                        if (float(change2[1]) - float(change2[2])) < 0:
+                            a1 = a1 + 1
+                    a2 = a2 / len(statistical_period)
+                    if a2 * 0.6 < float(change2[10]) < a2 * 2:
+                        atock_count_dict.update({'股票代码': atock_number})
+                        atock_count_dict.update({'股票名称': stock_name})
+                        atock_count_dict.update({'股票概念': concept})
+                        atock_count_dict.update({'最近红柱比例': a1 / len(statistical_period) * 100})
+                        atock_count_dict.update({'最近1天最小跌幅': float(statistical_period[len(statistical_period) - 1][8])})
+                        atock_count_dict.update({'最后交易日': lastest_day})
                         atock_price_margin.append(atock_count_dict)
                 else:
                     continue
@@ -181,19 +204,29 @@ class atockTrendCount:
             if len(klines) >= self.days:
                 statistical_period = klines[len(klines) - self.days:len(klines)]
                 statistical_period = Tool().spilt_str_list(statistical_period)
+                lastest_day = statistical_period[(len(statistical_period) - 1)][0]
                 n = 0
                 for stock_kline in statistical_period:
                     if float(stock_kline[8]) > 0:
                         n = n + 1
                     else:
                         continue
-                b = len(statistical_period) - self.days-1
-                a1 = float(statistical_period[len(statistical_period) - self.days-1][2])
-                a2 = float(statistical_period[len(statistical_period)-1][2])
-                Increase = (float(statistical_period[len(statistical_period) -1][2]) - float(statistical_period[len(statistical_period) - self.days][2]))/float(statistical_period[len(statistical_period) - self.days][2]) * 100
-                ratio = int(n/self.days*100)
-                atock_count_dict.update({"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase), "concept": concept,"市值排名":Market_value_rank,"利润排名":profit_rank,"行业内企业总数":nterprise_sum})
-                atock_price_margin.append(atock_count_dict)
+                # if float(stock_kline[8]) > 0:
+                if 1 > 0:
+                    b = len(statistical_period) - self.days - 1
+                    a1 = float(statistical_period[len(statistical_period) - self.days - 1][2])
+                    a2 = float(statistical_period[len(statistical_period) - 1][2])
+                    Increase = (float(statistical_period[len(statistical_period) - 1][2]) - float(
+                        statistical_period[len(statistical_period) - self.days][2])) / float(
+                        statistical_period[len(statistical_period) - self.days][2]) * 100
+                    ratio = int(n / self.days * 100)
+                    atock_count_dict.update(
+                        {"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase),
+                         "concept": concept, "市值排名": Market_value_rank, "利润排名": profit_rank, "行业内企业总数": nterprise_sum,
+                         '最后交易日': lastest_day})
+                    atock_price_margin.append(atock_count_dict)
+                else:
+                    continue
         return atock_price_margin
 
     def get_breakthrough_stock(self):
@@ -215,13 +248,14 @@ class atockTrendCount:
             if len(klines) >= 10:
                 statistical_period = klines[len(klines) - 10:len(klines)]
                 statistical_period = Tool().spilt_str_list(statistical_period)
+                lastest_day = statistical_period[(len(statistical_period) - 1)][0]
                 for price_message in statistical_period:
                     ten_day_price_sum = ten_day_price_sum + float(price_message[2])
-                ten_day_price = ten_day_price_sum/10
+                ten_day_price = ten_day_price_sum / 10
                 final_five_day_price_sum = 0
                 for i in range(5, 10):
                     final_five_day_price_sum = final_five_day_price_sum + float(statistical_period[i][2])
-                final_five_day_price = final_five_day_price_sum/5
+                final_five_day_price = final_five_day_price_sum / 5
                 last_five_day_price_sum = 0
                 for i in range(4, 9):
                     last_five_day_price_sum = last_five_day_price_sum + float(statistical_period[i][2])
@@ -232,7 +266,8 @@ class atockTrendCount:
                 last_last_five_day_price = last_last_five_day_price_sum / 5
                 last_Slope = last_five_day_price - last_last_five_day_price
                 final_Slope = final_five_day_price - last_five_day_price
-                if (ten_day_price <= final_five_day_price < ten_day_price*1.01) and (last_five_day_price < final_five_day_price) and (final_Slope > last_Slope):
+                if (ten_day_price <= final_five_day_price < ten_day_price * 1.01) and (
+                        last_five_day_price < final_five_day_price) and (final_Slope > last_Slope):
                     breakthrough_flag = 1
                 else:
                     breakthrough_flag = 0
@@ -246,10 +281,16 @@ class atockTrendCount:
                         n = n + 1
                     else:
                         continue
-                Increase = (float(statistical_period[len(statistical_period) -1][2]) - float(statistical_period[len(statistical_period) - self.days][2]))/float(statistical_period[len(statistical_period) - self.days][2]) * 100
-                ratio = int(n/self.days*100)
-                atock_count_dict.update({"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase), "concept": concept,"市值排名":Market_value_rank,"利润排名":profit_rank,"行业内企业总数":nterprise_sum})
-                atock_price_margin.append(atock_count_dict)
+                if float(stock_kline[8]) > 0:
+                    Increase = (float(statistical_period[len(statistical_period) - 1][2]) - float(
+                        statistical_period[len(statistical_period) - self.days][2])) / float(
+                        statistical_period[len(statistical_period) - self.days][2]) * 100
+                    ratio = int(n / self.days * 100)
+                    atock_count_dict.update(
+                        {"atock_number": atock_number, "stock_name": stock_name, "上涨天数比例": ratio, "上涨幅度": int(Increase),
+                         "concept": concept, "市值排名": Market_value_rank, "利润排名": profit_rank, "行业内企业总数": nterprise_sum,
+                         '最后交易日': lastest_day})
+                    atock_price_margin.append(atock_count_dict)
         if (400 >= len(atock_price_margin) >= 10):
             return atock_price_margin
         else:
