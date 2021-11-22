@@ -253,6 +253,7 @@ class atockTrendCount:
                     ten_day_price_sum = ten_day_price_sum + float(price_message[2])
                 ten_day_price = ten_day_price_sum / 10
                 final_five_day_price_sum = 0
+                #计算最近3天5日均线确定5日均线是否上涨状态
                 for i in range(5, 10):
                     final_five_day_price_sum = final_five_day_price_sum + float(statistical_period[i][2])
                 final_five_day_price = final_five_day_price_sum / 5
@@ -266,8 +267,9 @@ class atockTrendCount:
                 last_last_five_day_price = last_last_five_day_price_sum / 5
                 last_Slope = last_five_day_price - last_last_five_day_price
                 final_Slope = final_five_day_price - last_five_day_price
-                if (ten_day_price <= final_five_day_price < ten_day_price * 1.01) and (
-                        last_five_day_price < final_five_day_price) and (final_Slope > last_Slope):
+                #最后一天5日均线大于10日均线且大于前一天5日均线且最后2天的5日均线差大于倒数第二天与倒数第三天5日均线差
+                if (ten_day_price >= final_five_day_price) and (
+                        last_five_day_price < final_five_day_price) and (final_Slope > last_Slope) and (float(statistical_period[9][2]) > ten_day_price) and (float(statistical_period[9][2]) > final_five_day_price):
                     breakthrough_flag = 1
                 else:
                     breakthrough_flag = 0
@@ -281,7 +283,8 @@ class atockTrendCount:
                         n = n + 1
                     else:
                         continue
-                if float(stock_kline[8]) > 0:
+                #红柱
+                if float(stock_kline[2])-float(stock_kline[1]) > 0:
                     Increase = (float(statistical_period[len(statistical_period) - 1][2]) - float(
                         statistical_period[len(statistical_period) - self.days][2])) / float(
                         statistical_period[len(statistical_period) - self.days][2]) * 100
@@ -298,3 +301,23 @@ class atockTrendCount:
             print('数组长度' + str(len(atock_price_margin)))
             atock_price_margin = []
             return atock_price_margin
+
+    def get_over_five_moving_average_stock(self):
+        """
+        获取股票最近过5天线的比例
+        """
+        atock_price_margin = []
+        for atock in self.atock_data:
+            atock_count_dict = {}
+            atock_number = atock['stock_number']
+            stock_name = atock['name']
+            concept = atock['concept']
+            Market_value_rank = atock["Market_value_rank"]
+            profit_rank = atock["profit_rank"]
+            nterprise_sum = atock["nterprise_sum"]
+            klines = atock['klines'].replace('[', '').replace(']', '').split(', ')
+            if len(klines) >= self.days + 5:
+                statistical_period = klines[len(klines) - (self.days+5):len(klines)]
+                statistical_period = Tool().spilt_str_list(statistical_period)
+            for i in range(1, 9):
+                print(1)
