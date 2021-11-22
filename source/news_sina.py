@@ -12,6 +12,7 @@ class news_finance(object):
         """调用新浪财经新闻接口返回最新20条新闻
         return：json格式最新20条新闻
         """
+        news_str = ''
         news_word = ['工信部','失业率','进口','感染','疫苗','美联储','就业','天齐',
                                       '锂','美国','欧盟','铁矿','原油','特斯拉','比亚迪','央行',
                                       '住房和城乡建设部','自贸区','商务部','铁路','保监会','新能源',
@@ -39,11 +40,14 @@ class news_finance(object):
             for i in news_data_list:
                 for key_word in news_word:
                     if i['rich_text'].find(key_word) >=0:
-                        print(i['rich_text'])
-                        print(i['create_time'])
-        # return news_list
+                        news_str = news_str + print(i['rich_text']) + '\n' + print(i['create_time']) + '\n'
+        return news_str
 
 if __name__ == '__main__':
     a = news_finance()
+    news_str = ''
     for i in range(1, 50):
-        a.get_news(i)
+        news_str = news_str + a.get_news(i)
+    data = open("E:\股票\新闻.txt", 'w+')
+    print('news_str', file=data)
+    data.close()
