@@ -1,29 +1,36 @@
-#coding=utf-8import MySQLdb
-import traceback
+import requests
 
-tmp = "insert into exch_no_rand_auto(stkcode) values(%s);"   #SQL模板字符串
-l_tupple = [(i,) for i in range(100)]   #生成数据参数，list里嵌套tuple
+import os
+for i in range(1, 3):
+    url = "https://img2.wnacg.org/data/0801/68/00%s.jpg" % str(i)
 
-class mymysql(object):
-    def __init__(self):
-        self.conn = MySQLdb.connect(
-            host='127.0.0.1',
-            port = 3306,
-            user = 'root',
-            passwd = '123456',
-            db = 'xtp3')
+    d = 'F:\\B\\'
 
-    def insert_sql(self,temp,data):
-        cur = self.conn.cursor()
-        try:
-            cur.executemany(temp,data)
-            self.conn.commit()
-        except:
-            self.conn.rollback()
-            traceback.print_exc()
-        finally:
-            cur.close()
+    path = d + url.split('/')[-1]
 
-if __name__ == '__main__':
-    m = mymysql()
-    m.insert_sql(tmp,l_tupple)
+    # try:
+
+    if not os.path.exists(d):
+        os.mkdir(d)
+
+    if not os.path.exists(path):
+
+        r = requests.get(url)
+
+        r.raise_for_status()
+
+        with open(path, 'wb') as f:
+
+            f.write(r.content)
+
+            f.close()
+
+            print("图片保存成功")
+
+    else:
+
+        print("图片已存在")
+
+    # except:
+    #
+    #     print("图片获取失败")

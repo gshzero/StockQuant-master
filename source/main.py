@@ -10,7 +10,6 @@ from DB_thread import DB_threading
 from globalvar import Global_Data
 from http_threading import Http_Threading
 
-
 import time
 
 
@@ -38,12 +37,15 @@ class main:
                 id = um.get_count(sql, None, 'id')
                 print("-- 当前id: %s" % id)
                 if id == 0:
-                    sql = "INSERT INTO stock_klines ( stock_number, name,klines ) VALUES ( %s, %s,%s);" % (
-                        "\"" + dict['code'] + "\"", "\'" + dict['name'] + "\'", "\"" + str(dict['klines']) + "\"")
+                    sql = "INSERT INTO stock_klines ( stock_number, name,klines,week_klines) VALUES ( %s, %s,%s,%s,%s);" % (
+                        "\"" + dict['code'] + "\"", "\'" + dict['name'] + "\'", "\"" + str(dict['klines']) + "\"",
+                        "\"" + str(dict['week_klines']) + "\"","\"" + str(dict['moon_klines']) + "\"")
                     sql_list.append(sql)
                     print('install success')
                 else:
-                    sql = "UPDATE stock_klines SET klines=(%s),name=('%s') WHERE id=('%s')" % ("\"" + str(dict['klines']) + "\"", str(dict['name']), str(id))
+                    sql = "UPDATE stock_klines SET klines=(%s),week_klines=(%s),moon_klines=(%s),name=('%s') WHERE id=('%s')" % (
+                    "\"" + str(dict['klines']) + "\"", "\"" + str(dict['week_klines']) + "\"", "\"" + str(dict['moon_klines']) + "\"", str(dict['name']),
+                    str(id))
                     sql_list.append(sql)
                     print('update success')
         if len(sql_list) > 0:
@@ -123,7 +125,9 @@ class main:
             else:
                 stock_concept_list = HtmlDataGet().get_stock_concept(id_list)
                 for concept in stock_concept_list:
-                    sql = "update stock_list set concept = '%s',Market_value_rank = '%s',profit_rank = '%s', nterprise_sum = '%s'  where id= '%s';" % (concept['concept'], concept['Market_value_rank'], concept['profit_rank'], concept['nterprise_sum'], concept["id"])
+                    sql = "update stock_list set concept = '%s',Market_value_rank = '%s',profit_rank = '%s', nterprise_sum = '%s'  where id= '%s';" % (
+                    concept['concept'], concept['Market_value_rank'], concept['profit_rank'], concept['nterprise_sum'],
+                    concept["id"])
                     um.update_by_pk(sql, None)
                     serial_number = Serial_number + 1
                     print(serial_number / len(id_list) * 100)
@@ -143,7 +147,7 @@ class main:
     def get_atock_bottom(self, days):
         print('-------get atock bottom start-------')
         with UsingMysql(log_time=True) as um2:
-            sql = "select a.stock_number,a.name,a.klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%'"
+            sql = "select a.stock_number,a.name,a.klines,a.moon_klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%'"
             data = um2.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_stock_doji()
@@ -253,6 +257,39 @@ class main:
             table.write_sheet()
             table.save_book()
 
+    def get_atock_week_breakthrough(self, days):
+        print('-------get atock atock_breakthrough list start-------')
+        with UsingMysql(log_time=True) as um3:
+            sql = "select a.stock_number,a.name,a.klines,a.week_klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '002%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
+            data = um3.fetch_all(sql, None)
+            atock_count = atockTrendCount(data, days)
+            atock_count_list = atock_count.get_week_breakthrough_stock()
+            table = ExcelWrite('_week_breakthrough', atock_count_list)
+            table.write_sheet()
+            table.save_book()
+
+    def get_atock_moon_breakthrough(self, days):
+        print('-------get atock——moon__breakthrough list start-------')
+        with UsingMysql(log_time=True) as um3:
+            sql = "select a.stock_number,a.name,a.klines,a.week_klines,a.moon_klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '002%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
+            data = um3.fetch_all(sql, None)
+            atock_count = atockTrendCount(data, days)
+            atock_count_list = atock_count.get_moon_breakthrough_stock()
+            table = ExcelWrite('_moon_breakthrough', atock_count_list)
+            table.write_sheet()
+            table.save_book()
+
+    def get_week_atock_bottom(self, days):
+        print('-------get atock bottom start-------')
+        with UsingMysql(log_time=True) as um2:
+            sql = "select a.stock_number,a.name,a.week_klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%'  and a.name NOT like '%ST%'"
+            data = um2.fetch_all(sql, None)
+            atock_count = atockTrendCount(data, days)
+            atock_count_list = atock_count.get_week_stock_doji()
+            table = ExcelWrite('_week_atock_Doji', atock_count_list)
+            table.write_sheet()
+            table.save_book()
+
 
 if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
@@ -265,12 +302,17 @@ if __name__ == '__main__':
     # 获取最近一天缩量下跌股票列表
     # main().get_atock_margin(3)
     # 获取十字星股票列表
-    # main().get_atock_bottom(5)
+    main().get_atock_bottom(5)
     # 更新板块k线记录
     # main().update_concept_kline()
     # 获取上涨趋势概念列表
-    main().get_concept_bottom(3)
+    # main().get_concept_bottom(5)
     # 统计最近几天上涨的概念
     # main().get_rise_concept_list(5)
     # main().get_atock_rise(3)
     # main().get_atock_breakthrough(5)
+    # main().get_atock_week_breakthrough(5)
+    # main().get_week_atock_bottom(5)
+    # main().get_atock_moon_breakthrough(5)
+
+

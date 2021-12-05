@@ -40,7 +40,7 @@ class news_finance(object):
             for i in news_data_list:
                 for key_word in news_word:
                     if i['rich_text'].find(key_word) >=0:
-                        news_str = news_str + print(i['rich_text']) + '\n' + print(i['create_time']) + '\n'
+                        news_str = news_str + i['rich_text'] + '\n' + i['create_time'] + '\n'
         return news_str
 
 if __name__ == '__main__':

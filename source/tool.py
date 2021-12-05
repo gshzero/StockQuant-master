@@ -8,3 +8,6 @@ class Tool():
             b = i.split(',')
             c.append(b)
         return c
+
+    def dict_statistical(self,dict_str):
+        dict_list = dict_str.rstrip().split('，')

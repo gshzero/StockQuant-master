@@ -156,7 +156,7 @@ class Concept(object):
                         concept_count_dict.update({'股票代码': concept_number})
                         concept_count_dict.update({'股票名称': concept_name})
                         concept_count_dict.update({'最近红柱比例': a1/len(statistical_period)*100})
-                        concept_count_dict.update({'最近1天最小跌幅': float(statistical_period[len(statistical_period) - 1][8])})
+                        concept_count_dict.update({'最近1天最小跌幅': (float(statistical_period[len(statistical_period) - 1][2])-float(statistical_period[len(statistical_period) - 1][4]))/float(statistical_period[len(statistical_period) - 2][2])*100})
                         concept_count_dict.update({'最后交易日': lastest_day})
                         concept_price_margin.append(concept_count_dict)
                 elif (lastest_day_shoudiepancha > 0) and (lastest_day_xiayinxianbili >= 0.6) and (dao_shu_di_er_tian_shoudiepancha > 0):
