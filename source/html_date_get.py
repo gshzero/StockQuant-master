@@ -141,7 +141,7 @@ class HtmlDataGet(object):
 
     def get_stock_concept(self, stock_list):
         """调用东方财富接口查询股票概念
-            return：板块历史交易K线数据列表
+            return：股票概念
         """
         stock_mark_list = ['600', '601', '602', '603', '605', '688', '689']
         stock_concept_list = []

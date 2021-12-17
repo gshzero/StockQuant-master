@@ -147,7 +147,7 @@ class main:
     def get_atock_bottom(self, days):
         print('-------get atock bottom start-------')
         with UsingMysql(log_time=True) as um2:
-            sql = "select a.stock_number,a.name,a.klines,a.moon_klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%'"
+            sql = "select a.stock_number,a.name,a.klines,a.week_klines,a.moon_klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%'"
             data = um2.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_stock_doji()
@@ -260,7 +260,7 @@ class main:
     def get_atock_week_breakthrough(self, days):
         print('-------get atock atock_breakthrough list start-------')
         with UsingMysql(log_time=True) as um3:
-            sql = "select a.stock_number,a.name,a.klines,a.week_klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '002%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
+            sql = "select a.stock_number,a.name,a.klines,a.week_klines,a.moon_klines,b.concept,b.Market_value_rank,b.profit_rank,b.nterprise_sum from stock_klines a INNER JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000%' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '605%' or a.stock_number LIKE '002%' or a.stock_number LIKE '689%') AND (a. NAME NOT LIKE '%ST%')"
             data = um3.fetch_all(sql, None)
             atock_count = atockTrendCount(data, days)
             atock_count_list = atock_count.get_week_breakthrough_stock()
@@ -290,6 +290,27 @@ class main:
             table.write_sheet()
             table.save_book()
 
+    def get_week_atock_rise(self, weeks):
+        print('-------get week atock rise start-------')
+        with UsingMysql(log_time=True) as um2:
+            sql = "select a.stock_number,a.name,a.klines,a.week_klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%' and a.name NOT like '%ST%'"
+            data = um2.fetch_all(sql, None)
+            atock_count = atockTrendCount(data, 5)
+            atock_count_list = atock_count.get_stock_week_rise(weeks)
+            table = ExcelWrite('__stock_week_rise', atock_count_list)
+            table.write_sheet()
+            table.save_book()
+
+    def get_week_atock_zhangdiefu(self, zhangdiefu):
+        print('-------get week atock zhangdiefu start-------')
+        with UsingMysql(log_time=True) as um2:
+            sql = "select a.stock_number,a.name,a.klines,a.week_klines,b.concept from stock_klines a LEFT JOIN stock_list b ON a.stock_number = b.stock_number WHERE (a.stock_number LIKE '000*' OR a.stock_number LIKE '600%' or a.stock_number LIKE '601%' or a.stock_number LIKE '603%' or a.stock_number LIKE '002%') and a.name NOT like '%ST%' and a.name NOT like '%ST%'"
+            data = um2.fetch_all(sql, None)
+            atock_count = atockTrendCount(data, 5)
+            atock_count_list = atock_count.get_stock_week_up(20)
+            table = ExcelWrite('__stock_week_up', atock_count_list)
+            table.write_sheet()
+            table.save_book()
 
 if __name__ == '__main__':
     # 获取股票最近几天的支撑和案例对比数据
@@ -302,7 +323,7 @@ if __name__ == '__main__':
     # 获取最近一天缩量下跌股票列表
     # main().get_atock_margin(3)
     # 获取十字星股票列表
-    main().get_atock_bottom(5)
+    # main().get_atock_bottom(5)
     # 更新板块k线记录
     # main().update_concept_kline()
     # 获取上涨趋势概念列表
@@ -314,5 +335,9 @@ if __name__ == '__main__':
     # main().get_atock_week_breakthrough(5)
     # main().get_week_atock_bottom(5)
     # main().get_atock_moon_breakthrough(5)
+    # main().get_week_atock_rise(1)
+    # main().get_week_atock_zhangdiefu(20)
+
+
 
 

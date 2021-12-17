@@ -99,55 +99,55 @@ class HttpConnet(object):
         if stock_list_dict['data'] is None:
             print('此次获取的列表为空：' + str(secid))
         else:
-            print('成功获取' + stock_list_dict['data']["name"] + '数据')
+            print('成功获取' + stock_list_dict['data']["name"] + '日数据')
             #获取月交易数据
-            payload3 = {
-                "cb": "jQuery112409140191410382024_1638701798116",
-                "ut": 'fa5fd1943c7b386f172d6893dbfba10b',
+        payload3 = {
+            "cb": "jQuery112409140191410382024_1638701798116",
+            "ut": 'fa5fd1943c7b386f172d6893dbfba10b',
+            "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+            "fields1": "f1,f2,f3,f4,f5,f6",
+            "smplmt": "460",
+            "ut": "460",
+            "end": 20500101,
+            "_": 1638701798138,
+            "klt": 103,
+            "lmt": 1000000,
+            "secid": secid,
+            "beg": 0,
+            "fqt": 0
+        }
+        moon_r = requests.get(url="http://43.push2his.eastmoney.com/api/qt/stock/kline/get", params=payload3)
+        moon_stock_list_str = str(moon_r.text).partition('(')[2].partition(')')[0]
+        moon_stock_list_dict = json.loads(moon_stock_list_str)
+        if moon_stock_list_dict['data'] is None:
+            print('此次获取的列表为空：' + str(secid))
+        else:
+            print('成功获取' + moon_stock_list_dict['data']["name"] + '月数据')
+            stock_list_dict['data'].update({"moon_klines": moon_stock_list_dict['data']["klines"]})
+            # 获取周交易数据
+            payload2 = {
+                "cb": "jQuery112409656910092235322_1638696481747",
+                "fields1": 'f1,f2,f3,f4,f5,f6',
                 "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
-                "fields1": "f1,f2,f3,f4,f5,f6",
-                "smplmt": "102",
-                "ut": "460",
-                "end": 20500101,
-                "_": 0,
-                "klt": 103,
-                "lmt": 1000000,
+                "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+                "klt": "102",
+                "ut": "fa5fd1943c7b386f172d6893dbfba10b",
                 "secid": secid,
-                "beg": 0,
-                "fqt": 0
+                "fqt": 0,
+                "end": 20500101,
+                "_": 1638696481781,
+                "lmt": 120,
+                "klt": 102
             }
-            moon_r = requests.get(url="http://43.push2his.eastmoney.com/api/qt/stock/kline/get", params=payload3)
-            moon_stock_list_str = str(moon_r.text).partition('(')[2].partition(')')[0]
-            moon_stock_list_dict = json.loads(moon_stock_list_str)
-            if moon_stock_list_dict['data'] is None:
+            week_r = requests.get(url="http://14.push2his.eastmoney.com/api/qt/stock/kline/get", params=payload2)
+            week_stock_list_str = str(week_r.text).partition('(')[2].partition(')')[0]
+            week_stock_list_dict = json.loads(week_stock_list_str)
+            if week_stock_list_dict['data'] is None:
                 print('此次获取的列表为空：' + str(secid))
             else:
-                print('成功获取' + moon_stock_list_dict['data']["name"] + '数据')
-                stock_list_dict['data'].update({"moon_klines": moon_stock_list_dict['data']["klines"]})
-                # 获取周交易数据
-                payload2 = {
-                    "cb": "jQuery112409656910092235322_1638696481747",
-                    "fields1": 'f1,f2,f3,f4,f5,f6',
-                    "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
-                    "ut": "fa5fd1943c7b386f172d6893dbfba10b",
-                    "klt": "102",
-                    "ut": "fa5fd1943c7b386f172d6893dbfba10b",
-                    "secid": secid,
-                    "fqt": 0,
-                    "end": 20500101,
-                    "_": 1638696481781,
-                    "lmt": 120,
-                    "klt": 102
-                }
-                week_r = requests.get(url="http://14.push2his.eastmoney.com/api/qt/stock/kline/get", params=payload2)
-                week_stock_list_str = str(week_r.text).partition('(')[2].partition(')')[0]
-                week_stock_list_dict = json.loads(week_stock_list_str)
-                if week_stock_list_dict['data'] is None:
-                    print('此次获取的列表为空：' + str(secid))
-                else:
-                    print('成功获取' + week_stock_list_dict['data']["name"] + '数据')
-                    stock_list_dict['data'].update({"week_klines": week_stock_list_dict['data']["klines"]})
-            return stock_list_dict['data']
+                print('成功获取' + week_stock_list_dict['data']["name"] + '周数据')
+                stock_list_dict['data'].update({"week_klines": week_stock_list_dict['data']["klines"]})
+        return stock_list_dict['data']
 
 
 
